@@ -125,7 +125,7 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
 <script>
 (function() {
   var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'data/dashboard.json', false); // sync load
+  xhr.open('GET', 'dashboard.json', false); // sync load
   xhr.send();
   window.__DASH_DATA__ = JSON.parse(xhr.responseText);
   window.__DASH_DATA__.generated && document.addEventListener('DOMContentLoaded', function() {
