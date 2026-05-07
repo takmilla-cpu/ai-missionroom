@@ -123,16 +123,31 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
 .notice-btn.copied{border-color:#10b981;color:#065f46;background:#d1fae5;}
 </style>
 <script>
-(function() {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', 'dashboard.json', false); // sync load
-  xhr.send();
-  window.__DASH_DATA__ = JSON.parse(xhr.responseText);
-  window.__DASH_DATA__.generated && document.addEventListener('DOMContentLoaded', function() {
-    var el = document.getElementById('genDate');
-    if (el) el.textContent = window.__DASH_DATA__.generated;
-  });
-})();
+// 전역 데이터 변수
+var RAW_DATA = [];
+var INIT_DATA = {};
+var INIT_INSIGHTS = {};
+var BIZ_MGR_DATA = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+  fetch('data/dashboard.json')
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      RAW_DATA       = data.raw        || [];
+      INIT_DATA      = data.init_data  || {};
+      INIT_INSIGHTS  = data.insights   || {};
+      BIZ_MGR_DATA   = data.biz_mgr   || [];
+      window.__DASH_DATA__ = data;
+      if (typeof initDashboard  === 'function') initDashboard();
+      if (typeof initManagerTab === 'function') initManagerTab();
+    })
+    .catch(function(e) {
+      document.body.innerHTML = '<div style="padding:40px;color:#ef4444;font-size:14px;">데이터 로드 실패: ' + e.message + '</div>';
+    });
+});
 </script>
 </head>
 <body>
@@ -377,6 +392,8 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
 
 </div>
 <script>
+function initDashboard(){
+
 function renderInsights(d) {
   var g = document.getElementById('insightsGrid');
   if (!g) return;
@@ -549,7 +566,7 @@ function computeInsights(wb) {
   };
 }
 
-const INIT_DATA = window.__DASH_DATA__.init_data;
+// INIT_DATA는 전역으로 선언됨
 
 const TODAY_STR = '2026-05-06';
 const NEW_HIRE = '2026-02-25';
@@ -1001,7 +1018,7 @@ function parseXlsx(wb){
   }
 })();
 
-const RAW_DATA = window.__DASH_DATA__.raw;
+// RAW_DATA는 전역으로 선언됨
 (function(){
   var raw = RAW_DATA;
   var fil = raw.slice();
@@ -1089,7 +1106,7 @@ const RAW_DATA = window.__DASH_DATA__.raw;
 
 // ── INIT
 renderAll(INIT_DATA);
-const INIT_INSIGHTS = window.__DASH_DATA__.insights;
+// INIT_INSIGHTS는 전역으로 선언됨
 renderInsights(INIT_INSIGHTS);
 
 
@@ -1201,9 +1218,13 @@ renderInsights(INIT_INSIGHTS);
   updateSummary(); buildBizGrid(); doFilter();
 })();
 
+
+}
 </script>
 
 <script>
+function initManagerTab(){
+
 
 function buildSlackMsg(m) {
   var today = '2026.05.06';
@@ -1259,7 +1280,7 @@ window._copyNotice = function(btn) {
   });
 };
 (function() {
-var D = window.__DASH_DATA__.biz_mgr;
+var D = BIZ_MGR_DATA;
 var curBiz = -1, curF = 'all', srchQ = '', uid = 0;
 
 var ST_CSS = {
@@ -1440,6 +1461,8 @@ if (mgSrch) mgSrch.addEventListener('input', function(e) { srchQ = e.target.valu
 
 renderMgr();
 })();
+
+}
 </script>
 
 </body>
