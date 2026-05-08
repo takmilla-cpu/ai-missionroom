@@ -107,9 +107,11 @@ for p in all_rows:
     biz_map[bz]['total'] += 1
 biz_list = [{'bz':k,'done':v['done'],'prog':v['prog'],'delay':v['delay'],'abandon':v['abandon'],'nolog':v['nolog'],'total':v['total']} for k,v in sorted(biz_map.items(), key=lambda x:-x[1]['total'])]
 
-wk_cnt = [0]*11
-for p in all_rows:
-    wk_cnt[p['c']] += 1
+wk_cnt = []
+for w in range(1, 11):
+    c = sum(1 for p in all_rows if p['c'] >= w)
+    pct = round(c / len(all_rows) * 100, 1) if all_rows else 0
+    wk_cnt.append({'w': w, 'c': c, 'p': pct})
 
 init_data = {
     'summary':{'total':len(all_rows),'completed':cnt['done'],'in_progress':cnt['prog'],'no_login':cnt['nolog']},
@@ -132,8 +134,8 @@ for t, ms in team_map.items():
     if sc['nolog'] > 0: nl[t] = {'count':sc['nolog'],'total':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':'nolog','stl':'미로그인'} for p in ms if p['st']=='nolog']}
     if sc['delay'] > 0: dl[t] = {'count':sc['delay'],'total':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':'delay','stl':'3주↑ 지연'} for p in ms if p['st']=='delay']}
     if sc['abandon'] > 0 and t != '(미분류)': ab[t] = {'count':sc['abandon'],'total':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':'abandon','stl':'방치'} for p in ms if p['st']=='abandon']}
-    if sc['done'] == len(ms): ad.append({'team':t,'count':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':'done','stl':'완료'} for p in ms]})
-    if sc.get('delay',0)+sc.get('nolog',0)+sc.get('abandon',0) == 0 and len(ms)>0: ot.append({'team':t,'count':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':p['st'],'stl':ST_LABEL[p['st']]} for p in ms]})
+    if sc['done'] == len(ms): ad.append({'team':t,'total':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':'done','stl':'완료'} for p in ms]})
+    if sc.get('delay',0)+sc.get('nolog',0)+sc.get('abandon',0) == 0 and len(ms)>0: ot.append({'team':t,'total':len(ms),'members':[{'name':p['n'],'grade':p['gr'],'cw':p['c'],'st':p['st'],'stl':ST_LABEL[p['st']]} for p in ms]})
 
 insights = {
     'all_done': ad,
