@@ -1236,19 +1236,17 @@ function initManagerTab(){
 
 
 function buildSlackMsg(m) {
-  var today = '2026.05.06';
+  var now = new Date();
+  var today = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
   var t = '\n';
-  t += '안녕하세요, ' + m.name + ' ' + m.gr + '님 :wave:\n';
-  t += '\n';
+  t += '안녕하세요, ' + m.name + ' ' + m.gr + '님.\n';
   t += 'AI 미션룸 수료 현황 공유드립니다. (기준일: ' + today + ')\n';
-  t += '\n';
   t += '담당 팀원 *' + m.total + '명* 현황입니다.\n';
-  t += '\n';
-  t += '> ✅ 완료\t\t ' + m.done + '명\n';
-  t += '> 🔵 진행중\t\t ' + m.prog + '명\n';
-  t += '> 🟣 3주↑ 지연\t ' + m.delay + '명\n';
-  t += '> 🔴 방치\t\t ' + m.abandon + '명\n';
-  t += '> ⬜ 미로그인\t ' + m.nolog + '명\n';
+  t += '> 완료\t\t ' + m.done + '명\n';
+  t += '> 진행중\t\t ' + m.prog + '명\n';
+  t += '> 3주↑ 지연\t ' + m.delay + '명\n';
+  t += '> 방치\t\t ' + m.abandon + '명\n';
+  t += '> 미로그인\t ' + m.nolog + '명\n';
   var dm = [], am = [];
   m.depts.forEach(function(d) {
     d.members.forEach(function(mem) {
@@ -1257,18 +1255,20 @@ function buildSlackMsg(m) {
     });
   });
   if (dm.length || am.length) {
-    t += '\n─────────────────────\n';
+    t += '─────────────────────\n';
     if (dm.length) {
-      t += '🟣 *3주↑ 지연 (' + dm.length + '명)*\n';
+      t += '*3주↑ 지연 (' + dm.length + '명)*\n';
       dm.forEach(function(l) { t += l + '\n'; });
     }
     if (am.length) {
       if (dm.length) t += '\n';
-      t += '🔴 *방치 (' + am.length + '명)*\n';
+      t += '*방치 (' + am.length + '명)*\n';
       am.forEach(function(l) { t += l + '\n'; });
     }
     t += '─────────────────────\n';
-    t += '수료 독려 부탁드립니다 🙏 감사합니다!';
+    t += '별도 메일 공지를 통해 말씀드린 사항과 마찬가지로\n';
+    t += '전사 AI 역량 강화를 위해 꼭 이번 주 금요일까지 수료할 수 있도록 독려 부탁드립니다.\n';
+    t += '감사합니다.';
   } else {
     t += '\n팀원 모두 잘 진행 중입니다 :clap: 감사합니다!';
   }
@@ -1495,28 +1495,28 @@ function renderChangelog(){
   CHANGELOG.forEach(function(entry,idx){
     var tid='clt'+idx;var isFirst=idx===0;
     var sRows=entry.summary.map(function(s){
-      var d=s.diff>0?'+'+s.diff:s.diff===0?'±0':String(s.diff);
+      var d=s.diff>0?'+'+s.diff:s.diff===0?'\u00b10':String(s.diff);
       var c=(s.diff>0&&s.st==='done')?'#10b981':(s.diff<0&&s.st==='prog')?'#ef4444':(s.diff>0&&(s.st==='delay'||s.st==='abandon'))?'#ef4444':'var(--tx3)';
-      return '<tr><td>'+s.icon+' '+s.label+'</td><td>'+s.prev+'명</td><td>'+s.curr+'명</td><td style="font-weight:600;color:'+c+'">'+d+'</td></tr>';
+      return '<tr><td>'+s.icon+' '+s.label+'</td><td>'+s.prev+'\uba85</td><td>'+s.curr+'\uba85</td><td style="font-weight:600;color:'+c+'">'+d+'</td></tr>';
     }).join('');
     var cRows=entry.changes.map(function(c){
       return '<tr><td>'+c.name+'</td><td>'+c.grade+'</td><td>'+c.bz+'</td><td>'+c.from_lbl+'</td><td>'+c.to_lbl+'</td><td>'+c.reason+'</td></tr>';
     }).join('');
     var doneCnt=entry.summary.filter(function(s){return s.st==='done';})[0];
-    var badge=(doneCnt&&doneCnt.diff>0)?' <span style="font-size:10px;color:#10b981;font-weight:600">+'+doneCnt.diff+'완료</span>':'';
+    var badge=(doneCnt&&doneCnt.diff>0)?' <span style="font-size:10px;color:#10b981;font-weight:600">+'+doneCnt.diff+'\uc644\ub8cc</span>':'';
     parts.push(
       '<div class="cl-entry">'+
       '<div class="cl-toggle-head" data-tid="'+tid+'" onclick="toggleCl(this)">'+
-        '<div><span style="font-size:13px;font-weight:700;color:var(--tx)">'+entry.date.replace(/-/g,'.')+' 업데이트</span>'+badge+
-        '<div style="font-size:11px;color:var(--tx3);margin-top:2px">이전: '+entry.prev_date.replace(/-/g,'.')+' · 변경 '+entry.changes.length+'명</div></div>'+
+        '<div><span style="font-size:13px;font-weight:700;color:var(--tx)">'+entry.date.replace(/-/g,'.')+' \uc5c5\ub370\uc774\ud2b8</span>'+badge+
+        '<div style="font-size:11px;color:var(--tx3);margin-top:2px">\uc774\uc804: '+entry.prev_date.replace(/-/g,'.')+' \u00b7 \ubcc0\uacbd '+entry.changes.length+'\uba85</div></div>'+
         '<i class="ti ti-chevron-down" id="chv-'+tid+'" style="font-size:13px;color:var(--tx3);transition:transform .2s;'+(isFirst?'transform:rotate(180deg)':'')+'"></i>'+
       '</div>'+
       '<div id="'+tid+'" class="cl-toggle-body" style="display:'+(isFirst?'block':'none')+'">'+
-        '<div class="cl-section">전체 현황 요약</div>'+
-        '<table class="cl-tbl"><thead><tr><th>구분</th><th>이전</th><th>현재</th><th>변동</th></tr></thead><tbody>'+sRows+'</tbody></table>'+
-        '<div class="cl-section">상태 변경 인원 ('+entry.changes.length+'명)</div>'+
-        '<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="cl-copy-btn" data-idx="'+idx+'">📋 엑셀용 복사</button></div>'+
-        '<table class="cl-tbl"><thead><tr><th>이름</th><th>직책</th><th>사업부</th><th>이전</th><th>현재</th><th>사유</th></tr></thead><tbody>'+cRows+'</tbody></table>'+
+        '<div class="cl-section">\uc804\uccb4 \ud604\ud669 \uc694\uc57d</div>'+
+        '<table class="cl-tbl"><thead><tr><th>\uad6c\ubd84</th><th>\uc774\uc804</th><th>\ud604\uc7ac</th><th>\ubcc0\ub3d9</th></tr></thead><tbody>'+sRows+'</tbody></table>'+
+        '<div class="cl-section">\uc0c1\ud0dc \ubcc0\uacbd \uc778\uc6d0 ('+entry.changes.length+'\uba85)</div>'+
+        '<div style="display:flex;justify-content:flex-end;margin-bottom:6px"><button class="cl-copy-btn" data-idx="'+idx+'">\ud83d\udccb \uc5d1\uc140\uc6a9 \ubcf5\uc0ac</button></div>'+
+        '<table class="cl-tbl"><thead><tr><th>\uc774\ub984</th><th>\uc9c1\ucc45</th><th>\uc0ac\uc5c5\ubd80</th><th>\uc774\uc804</th><th>\ud604\uc7ac</th><th>\uc0ac\uc720</th></tr></thead><tbody>'+cRows+'</tbody></table>'+
       '</div></div>'
     );
   });
@@ -1524,11 +1524,11 @@ function renderChangelog(){
   body.querySelectorAll('.cl-copy-btn').forEach(function(btn){
     btn.addEventListener('click',function(){
       var entry=CHANGELOG[parseInt(btn.getAttribute('data-idx'))];
-      var lines=['['+entry.date+' 업데이트]','','■ 전체 현황 요약','구분	이전	현재	변동'];
-      entry.summary.forEach(function(s){var d=s.diff>0?'+'+s.diff:s.diff===0?'±0':String(s.diff);lines.push(s.icon+' '+s.label+'	'+s.prev+'명	'+s.curr+'명	'+d);});
-      lines.push('','■ 상태 변경 인원','이름	직책	사업부	이전 상태	현재 상태	사유');
-      entry.changes.forEach(function(c){lines.push(c.name+'	'+c.grade+'	'+c.bz+'	'+c.from_lbl+'	'+c.to_lbl+'	'+c.reason);});
-      navigator.clipboard.writeText(lines.join('\n')).then(function(){btn.textContent='✓ 복사됨';setTimeout(function(){btn.textContent='📋 엑셀용 복사';},2000);});
+      var lines=['['+entry.date+' \uc5c5\ub370\uc774\ud2b8]','','\u25a0 \uc804\uccb4 \ud604\ud669 \uc694\uc57d','\uad6c\ubd84\t\uc774\uc804\t\ud604\uc7ac\t\ubcc0\ub3d9'];
+      entry.summary.forEach(function(s){var d=s.diff>0?'+'+s.diff:s.diff===0?'\u00b10':String(s.diff);lines.push(s.icon+' '+s.label+'\t'+s.prev+'\uba85\t'+s.curr+'\uba85\t'+d);});
+      lines.push('','\u25a0 \uc0c1\ud0dc \ubcc0\uacbd \uc778\uc6d0','\uc774\ub984\t\uc9c1\ucc45\t\uc0ac\uc5c5\ubd80\t\uc774\uc804 \uc0c1\ud0dc\t\ud604\uc7ac \uc0c1\ud0dc\t\uc0ac\uc720');
+      entry.changes.forEach(function(c){lines.push(c.name+'\t'+c.grade+'\t'+c.bz+'\t'+c.from_lbl+'\t'+c.to_lbl+'\t'+c.reason);});
+      navigator.clipboard.writeText(lines.join('\n')).then(function(){btn.textContent='\u2713 \ubcf5\uc0ac\ub428';setTimeout(function(){btn.textContent='\ud83d\udccb \uc5d1\uc140\uc6a9 \ubcf5\uc0ac';},2000);});
     });
   });
 }
