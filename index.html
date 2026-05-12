@@ -412,7 +412,7 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
     </div>
     <div id="nlFl" class="fl"></div>
     <div class="sc">
-      <table><thead><tr><th>#</th><th>이름</th><th>직책</th><th>사업부</th><th>팀 (부서)</th><th>직무</th><th>이메일</th><th>입사일</th><th>구분</th></tr></thead>
+      <table><thead><tr><th>#</th><th>이름</th><th>사업부</th><th>본부</th><th>팀 (부서)</th><th>직무</th><th>직책</th><th>이메일</th><th>입사일</th><th>구분</th></tr></thead>
       <tbody id="nlTb"></tbody></table>
     </div>
   </div>
@@ -764,7 +764,7 @@ function renderTables(){
     (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.e}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><strong>${p.c}</strong><span class="tx3"> /10</span></td><td><div class="prg"><div class="prg-bar"><div class="prg-fill" style="width:${p.c*10}%"></div></div><span class="prg-t">${p.c*10}%</span></div></td><td class="${p.ld?dc(p.ld):''}">${p.ld||'-'}</td><td><span class="tag ${TC[p.st]||''}">${SL[p.st]||p.st}</span></td></tr>`
   );
   MGR.nl = makeMgr('nl', ()=>D.nolog, 'nlSrch','nlTb',null,'nlFl',
-    (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.e||'-'}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><span class="tag ${p.nw?'t-new':'t-old'}">${p.nw?'신규':'기존'}</span></td></tr>`
+    (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.hb||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.gr||'-'}</td><td style="font-size:11px" class="tx3">${p.e||'-'}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><span class="tag ${p.nw?'t-new':'t-old'}">${p.nw?'신규':'기존'}</span></td></tr>`
   );
   MGR.dl.init(); MGR.nb.init(); MGR.nl.init();
 }
