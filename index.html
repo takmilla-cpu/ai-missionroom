@@ -670,8 +670,8 @@ function renderSummary(){
   // nolog
   const nolog = D.nolog;
   document.getElementById('nl-tot').textContent = nolog.length;
-  document.getElementById('nl-new').textContent = nolog.filter(p=>p.nw).length;
-  document.getElementById('nl-old').textContent = nolog.filter(p=>!p.nw).length;
+  document.getElementById('nl-new').textContent = nolog.filter(p=>p.hd>='2026-02-25').length;
+  document.getElementById('nl-old').textContent = nolog.filter(p=>p.hd<'2026-02-25').length;
 }
 
 function updateBadges(){
@@ -764,7 +764,7 @@ function renderTables(){
     (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.e}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><strong>${p.c}</strong><span class="tx3"> /10</span></td><td><div class="prg"><div class="prg-bar"><div class="prg-fill" style="width:${p.c*10}%"></div></div><span class="prg-t">${p.c*10}%</span></div></td><td class="${p.ld?dc(p.ld):''}">${p.ld||'-'}</td><td><span class="tag ${TC[p.st]||''}">${SL[p.st]||p.st}</span></td></tr>`
   );
   MGR.nl = makeMgr('nl', ()=>D.nolog, 'nlSrch','nlTb',null,'nlFl',
-    (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.hb||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.gr||'-'}</td><td style="font-size:11px" class="tx3">${p.e||'-'}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><span class="tag ${p.nw?'t-new':'t-old'}">${p.nw?'신규':'기존'}</span></td></tr>`
+    (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.hb||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.gr||'-'}</td><td style="font-size:11px" class="tx3">${p.e||'-'}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><span class="tag ${p.hd>='2026-02-25'?'t-new':'t-old'}">${p.hd>='2026-02-25'?'신규':'기존'}</span></td></tr>`
   );
   MGR.dl.init(); MGR.nb.init(); MGR.nl.init();
 }
@@ -804,7 +804,7 @@ window.dlXl = (type) => {
     fname = `AI미션룸_신규입사자_${today}.xlsx`;
   } else {
     hdr = ['이름','구분','사업부','본부','팀(부서)','직무','직책','고용형태','이메일','입사일'];
-    rows = D.nolog.map(p=>[p.n,p.nw?'신규':'기존',p.bz,p.hb,p.dp,p.ro,p.gr,p.ht,p.e,p.hd]);
+    rows = D.nolog.map(p=>[p.n,p.hd>='2026-02-25'?'신규':'기존',p.bz,p.hb,p.dp,p.ro,p.gr,p.ht,p.e,p.hd]);
     fname = `AI미션룸_미로그인_${today}.xlsx`;
   }
   const ws = XLSX.utils.aoa_to_sheet([hdr,...rows]);
@@ -954,7 +954,7 @@ function parseXlsx(wb){
   ];
 
   // nolog
-  const nolog = notIn.map(p=>({n:p.n,e:p.e,hd:p.hd,nw:p.isNew,bz:p.bz,hb:p.hb,dp:p.dp,ro:p.ro,gr:p.gr,ht:p.ht}));
+  const nolog = (INIT_DATA.nolog||[]).map(p=>({n:p.n,e:p.e,hd:p.hd,nw:p.hd>='2026-02-25',bz:p.bz,hb:p.hb,dp:p.dp,ro:p.ro,gr:p.gr,ht:p.ht}));
 
   return {
     summary:{ total, completed, in_progress:total-completed-notIn.length, no_login:notIn.length },
