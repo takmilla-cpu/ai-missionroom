@@ -1142,12 +1142,21 @@ function renderAbandonDelay() {
   if (!el) return;
   var ST_CSS = {abandon:'background:#FEE2E2;color:#991B1B', delay:'background:#EEEDFE;color:#3C3489'};
   var ST_LBL = {abandon:'방치', delay:'3주↑ 지연'};
+  var NEW_CUTOFF = '2026-02-25';
+  var returned = new Set((INIT_DATA.leave||[]).filter(function(r){return !r.on_leave;}).map(function(r){return r.n;}));
   var items = RAW_DATA.filter(function(p){return p.st==='abandon'||p.st==='delay';});
   items.sort(function(a,b){ return (a.st==='abandon'?0:1)-(b.st==='abandon'?0:1)||a.bz.localeCompare(b.bz); });
   var bdg = document.getElementById('bdg-adl');
   if(bdg) bdg.textContent = items.length+'명';
   if(!items.length){ el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:20px;font-size:13px;">해당 인원 없음</div>'; return; }
   var rows = items.map(function(p,i){
+    var isNew = p.hd >= NEW_CUTOFF;
+    var isRet = returned.has(p.n);
+    var typeTag = isRet
+      ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#ECFDF5;color:#065F46">복직</span>'
+      : isNew
+        ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#FEF3C7;color:#92400E">신규</span>'
+        : '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#F1EFE8;color:#5F5E5A">기존</span>';
     return '<tr>'+
       '<td style="color:var(--tx3);font-size:11px;padding:6px 10px">'+(i+1)+'</td>'+
       '<td style="padding:6px 10px"><strong style="font-size:13px">'+p.n+'</strong></td>'+
@@ -1157,6 +1166,7 @@ function renderAbandonDelay() {
       '<td style="font-size:11px;color:var(--tx3);padding:6px 10px">'+p.e+'</td>'+
       '<td style="font-size:11px;color:var(--tx3);text-align:center;padding:6px 10px">'+p.c+'주차</td>'+
       '<td style="padding:6px 10px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;'+ST_CSS[p.st]+'">'+ST_LBL[p.st]+'</span></td>'+
+      '<td style="padding:6px 10px">'+typeTag+'</td>'+
     '</tr>';
   }).join('');
   el.innerHTML='<div class="sc"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
@@ -1169,6 +1179,7 @@ function renderAbandonDelay() {
     '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">이메일</th>'+
     '<th style="padding:6px 10px;text-align:center;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">완료</th>'+
     '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">상태</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">구분</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function renderNbMonthly() {
