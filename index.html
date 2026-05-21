@@ -162,13 +162,10 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
 
 <nav class="nav">
   <div class="tab on" data-tab="ov">전체 현황</div>
-  <div class="tab" data-tab="raw">로우 데이터</div>
-  <div class="tab" data-tab="ab">방치 <span class="bdg" id="bdg-ab" style="background:#ef4444">—</span></div>
-  <div class="tab" data-tab="dl">3주↑ 지연 <span class="bdg" id="bdg-dl" style="background:#8b5cf6">—</span></div>
-  <div class="tab" data-tab="nl">미로그인 <span class="bdg" id="bdg-nl" style="background:var(--tx3)">—</span></div>
   <div class="tab" data-tab="nb">신규입사자 <span class="bdg" id="bdg-nb" style="background:var(--warn)">—</span></div>
   <div class="tab" data-tab="lv">휴직</div>
   <div class="tab" data-tab="mg">관리자</div>
+  <div class="tab" data-tab="raw">로우 데이터</div>
 </nav>
 
 <div class="main">
@@ -191,12 +188,12 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
   </div>
 
     <div style="margin-top:32px;">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-        <span class="dot"></span>
-        <span style="font-size:13px;font-weight:700;color:var(--tx2);">팀별 인사이트</span>
-        <span style="font-size:12px;color:var(--tx3);margin-left:2px;">데이터 업로드 시 자동 반영</span>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <span class="dot" style="background:#ef4444"></span>
+        <span style="font-size:13px;font-weight:700;color:var(--tx2);">방치 및 3주↑ 지연 인원</span>
+        <span id="bdg-adl" style="font-size:11px;padding:1px 7px;border-radius:10px;background:#FEE2E2;color:#991B1B;font-weight:500;"></span>
       </div>
-      <div id="insightsGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;"></div>
+      <div id="abandonDelayList"></div>
     </div>
 
 </div>
@@ -311,31 +308,15 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
 <!-- NEWBIE -->
 <div class="pane" id="p-nb">
   <div style="font-size:12px;color:var(--tx3);margin-bottom:12px;">* 신규입사자 기준: AI 미션룸 첫 시작 이후 입사자 (2026.02.25 이후)</div>
-  <div class="cards g4">
+  <div class="cards g4" style="margin-bottom:20px;grid-template-columns:repeat(5,1fr);">
     <div class="card c-bl"><div class="card-lbl">신규 합계</div><div class="card-val" id="nb-total">—</div><div class="card-sub">2026.02.25 이후 입사</div></div>
-    <div class="card c-gr"><div class="card-lbl">진행중</div><div class="card-val" id="nb-ok">—</div><div class="card-sub" id="nb-ok-sub">—</div></div>
-    <div class="card c-rd"><div class="card-lbl">지연</div><div class="card-val" id="nb-delay">—</div><div class="card-sub">3주 이상 밀림</div></div>
+    <div class="card c-gr"><div class="card-lbl">완료</div><div class="card-val" id="nb-done">—</div><div class="card-sub" id="nb-done-sub">—</div></div>
+    <div class="card c-bl"><div class="card-lbl">진행중</div><div class="card-val" id="nb-ok">—</div><div class="card-sub">지연·방치 제외</div></div>
+    <div class="card c-rd"><div class="card-lbl">지연 &amp; 방치</div><div class="card-val" id="nb-delay">—</div><div class="card-sub" id="nb-delay-sub">—</div></div>
     <div class="card c-gy"><div class="card-lbl">미로그인</div><div class="card-val" id="nb-nl">—</div><div class="card-sub">시스템 미접속</div></div>
   </div>
-  <div class="sec"><span class="dot"></span>사업부별 신규 현황<span class="sec-hint">(클릭 필터)</span></div>
-  <div class="biz-grid" id="nbBiz"></div>
-  <div class="tbl-box">
-    <div class="tbl-hdr">
-      <h3>신규입사자 전체 목록</h3>
-      <div class="acts">
-        <input class="srch" id="nbSrch" placeholder="이름·이메일·사업부 검색…">
-        <button class="btn-xl" onclick="dlXl('newbie')">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>엑셀
-        </button>
-      </div>
-    </div>
-    <div id="nbFl" class="fl"></div>
-    <div class="sc">
-      <table><thead><tr><th>#</th><th>이름</th><th>직책</th><th>사업부</th><th>팀 (부서)</th><th>직무</th><th>이메일</th><th>입사일</th><th>완료</th><th>진행률</th><th>마지막 완료일</th><th>상태</th></tr></thead>
-      <tbody id="nbTb"></tbody></table>
-    </div>
-    <div class="pag" id="nbPag"></div>
-  </div>
+  <div class="sec" style="margin-bottom:12px;"><span class="dot"></span>월별 입사자 현황 <span style="font-size:11px;color:var(--tx3);">(클릭 시 목록 펼치기)</span></div>
+  <div id="nbMonthly" style="display:flex;flex-direction:column;gap:10px;"></div>
 </div>
 
 <!-- NO LOGIN -->
@@ -655,14 +636,20 @@ function renderSummary(){
   // newb stats
   const nb = D.newb;
   document.getElementById('nb-total').textContent = nb.length;
-  const ok = nb.filter(p=>p.st==='ok').length;
-  const done = nb.filter(p=>p.st==='done').length;
-  const delay = nb.filter(p=>p.st==='delay').length;
-  const nl = nb.filter(p=>p.st==='nl').length;
-  document.getElementById('nb-ok').textContent = ok+done;
-  document.getElementById('nb-ok-sub').textContent = '완료 '+done+' + 3주 이내 '+ok+'명';
-  document.getElementById('nb-delay').textContent = delay;
-  document.getElementById('nb-nl').textContent = nl;
+  const nb_done = nb.filter(p=>p.st==='done').length;
+  const nb_prog = nb.filter(p=>p.st==='prog'||p.st==='ok').length;
+  const nb_delay = nb.filter(p=>p.st==='delay').length;
+  const nb_abandon = nb.filter(p=>p.st==='abandon').length;
+  const nb_nl = nb.filter(p=>p.st==='nolog'||p.st==='nl').length;
+  var nbDoneEl = document.getElementById('nb-done');
+  if(nbDoneEl) nbDoneEl.textContent = nb_done;
+  var nbDoneSub = document.getElementById('nb-done-sub');
+  if(nbDoneSub) nbDoneSub.textContent = nb.length ? Math.round(nb_done/nb.length*100)+'%' : '—';
+  document.getElementById('nb-ok').textContent = nb_prog;
+  var delaySub = document.getElementById('nb-delay-sub');
+  document.getElementById('nb-delay').textContent = nb_delay + nb_abandon;
+  if(delaySub) delaySub.textContent = '지연 '+nb_delay+' · 방치 '+nb_abandon+'명';
+  document.getElementById('nb-nl').textContent = nb_nl;
   // nolog
   const nolog = D.nolog;
   document.getElementById('nl-tot').textContent = nolog.length;
@@ -671,9 +658,9 @@ function renderSummary(){
 }
 
 function updateBadges(){
-  document.getElementById('bdg-dl').textContent = D.delayed.length;
-  document.getElementById('bdg-nb').textContent = D.newb.length;
-  document.getElementById('bdg-nl').textContent = D.nolog.length;
+  var dlEl=document.getElementById('bdg-dl'); if(dlEl) dlEl.textContent = D.delayed.length;
+  var nbEl=document.getElementById('bdg-nb'); if(nbEl) nbEl.textContent = D.newb.length;
+  var nlEl=document.getElementById('bdg-nl'); if(nlEl) nlEl.textContent = D.nolog.length;
   var abEl=document.getElementById('bdg-ab');if(abEl){var abC=RAW_DATA.filter(function(p){return p.st==='abandon';}).length;abEl.textContent=abC;}
 }
 
@@ -693,13 +680,15 @@ function renderWeekChart(){
 }
 
 function makeBizGrid(elId, items){
+  const el = document.getElementById(elId);
+  if(!el) return;
   const cnt = {};
   items.forEach(p=>{const k=p.bz||'(미분류)';cnt[k]=(cnt[k]||0)+1;});
   const sorted = Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
   const max = sorted[0]?.[1]||1;
   const col = {};
   sorted.forEach(([k],i)=>col[k]=BCOLS[i%BCOLS.length]);
-  document.getElementById(elId).innerHTML = sorted.map(([bz,n])=>`
+  el.innerHTML = sorted.map(([bz,n])=>`
     <div class="biz-card" data-biz="${bz.replace(/"/g,'&quot;')}" onclick="filterBiz('${elId}','${bz.replace(/'/g,"\\'")}')">
       <div class="biz-nm" title="${bz}">${bz}</div>
       <div class="biz-ct">${n}명</div>
@@ -756,13 +745,13 @@ function renderTables(){
   MGR.dl = makeMgr('dl', ()=>D.delayed, 'dlSrch','dlTb','dlPag','dlFl',
     (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx3">${p.gr||'−'}</td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.e}</td><td><strong>${p.c}</strong><span class="tx3"> /10</span></td><td><div class="prg"><div class="prg-bar"><div class="prg-fill" style="width:${p.c*10}%"></div></div><span class="prg-t">${p.c*10}%</span></div></td><td class="${dc(p.ld)}">${p.ld}</td><td class="${dc(p.ld)}">${dd(p.ld)}일</td></tr>`
   );
-  MGR.nb = makeMgr('nb', ()=>D.newb, 'nbSrch','nbTb','nbPag','nbFl',
-    (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx3">${p.gr||'-'}</td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.e}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td><strong>${p.c}</strong><span class="tx3"> /10</span></td><td><div class="prg"><div class="prg-bar"><div class="prg-fill" style="width:${p.c*10}%"></div></div><span class="prg-t">${p.c*10}%</span></div></td><td class="${p.ld?dc(p.ld):''}">${p.ld||'-'}</td><td><span class="tag ${TC[p.st]||''}">${SL[p.st]||p.st}</span></td></tr>`
-  );
+
+
+
   MGR.nl = makeMgr('nl', ()=>D.nolog, 'nlSrch','nlTb',null,'nlFl',
     (p,n)=>`<tr><td class="tx3">${n}</td><td><strong>${p.n}</strong></td><td style="font-size:11px" class="tx2">${p.bz||'-'}</td><td style="font-size:11px" class="tx3">${p.hb||'-'}</td><td style="font-size:11px" class="tx3">${p.dp||'-'}</td><td style="font-size:11px" class="tx3">${p.ro||'-'}</td><td style="font-size:11px" class="tx3">${p.gr||'-'}</td><td style="font-size:11px" class="tx3">${p.e||'-'}</td><td style="font-size:11px" class="tx3">${p.hd}</td><td>${NL_RETURNED.has(p.n)?'<span class="tag" style="background:#FEF3C7;color:#92400E">복직</span>':p.hd>='2026-02-25'?'<span class="tag t-new">신규</span>':'<span class="tag t-old">기존</span>'}</td></tr>`
   );
-  MGR.dl.init(); MGR.nb.init(); MGR.nl.init();
+  MGR.dl.init(); MGR.nl.init();
 }
 
 window.filterBiz = (elId, biz) => {
@@ -1146,7 +1135,135 @@ function parseXlsx(wb){
 
 renderAll(INIT_DATA);
 // INIT_INSIGHTS는 전역으로 선언됨
-renderInsights(INIT_INSIGHTS);
+// renderInsights(INIT_INSIGHTS); // 팀별 인사이트 비활성화
+
+function renderAbandonDelay() {
+  var el = document.getElementById('abandonDelayList');
+  if (!el) return;
+  var ST_CSS = {abandon:'background:#FEE2E2;color:#991B1B', delay:'background:#EEEDFE;color:#3C3489'};
+  var ST_LBL = {abandon:'방치', delay:'3주↑ 지연'};
+  var items = RAW_DATA.filter(function(p){return p.st==='abandon'||p.st==='delay';});
+  items.sort(function(a,b){ return (a.st==='abandon'?0:1)-(b.st==='abandon'?0:1)||a.bz.localeCompare(b.bz); });
+  var bdg = document.getElementById('bdg-adl');
+  if(bdg) bdg.textContent = items.length+'명';
+  if(!items.length){ el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:20px;font-size:13px;">해당 인원 없음</div>'; return; }
+  var rows = items.map(function(p,i){
+    return '<tr>'+
+      '<td style="color:var(--tx3);font-size:11px;padding:6px 10px">'+(i+1)+'</td>'+
+      '<td style="padding:6px 10px"><strong style="font-size:13px">'+p.n+'</strong></td>'+
+      '<td style="font-size:11px;color:var(--tx3);padding:6px 10px">'+p.gr+'</td>'+
+      '<td style="font-size:11px;color:var(--tx2);padding:6px 10px">'+p.bz+'</td>'+
+      '<td style="font-size:11px;color:var(--tx3);padding:6px 10px">'+p.dp+'</td>'+
+      '<td style="font-size:11px;color:var(--tx3);padding:6px 10px">'+p.e+'</td>'+
+      '<td style="font-size:11px;color:var(--tx3);text-align:center;padding:6px 10px">'+p.c+'주차</td>'+
+      '<td style="padding:6px 10px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;'+ST_CSS[p.st]+'">'+ST_LBL[p.st]+'</span></td>'+
+    '</tr>';
+  }).join('');
+  el.innerHTML='<div class="sc"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+    '<thead><tr style="background:var(--sf2)">'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">#</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">이름</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">직책</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">사업부</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">팀(부서)</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">이메일</th>'+
+    '<th style="padding:6px 10px;text-align:center;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">완료</th>'+
+    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">상태</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+function renderNbMonthly() {
+  var el = document.getElementById('nbMonthly');
+  if (!el) return;
+  var MONTH_LBL = {'01':'1월','02':'2월','03':'3월','04':'4월','05':'5월','06':'6월','07':'7월','08':'8월','09':'9월','10':'10월','11':'11월','12':'12월'};
+  var ST_CSS = {done:'background:#EAF3DE;color:#27500A',prog:'background:#E6F1FB;color:#0C447C',delay:'background:#EEEDFE;color:#3C3489',abandon:'background:#FEE2E2;color:#791F1F',nolog:'background:#F1EFE8;color:#5F5E5A'};
+  var ST_LBL2 = {done:'완료',prog:'진행중',delay:'3주↑ 지연',abandon:'방치',nolog:'미로그인'};
+  var newb = RAW_DATA.filter(function(p){return p.hd>='2026-02-25';});
+  var monthMap = {};
+  newb.forEach(function(p){
+    var m = p.hd.substring(0,7);
+    if(!monthMap[m]) monthMap[m]=[];
+    monthMap[m].push(p);
+  });
+  var months = Object.keys(monthMap).sort();
+
+  el.innerHTML = '';
+  months.forEach(function(m){
+    var pp = monthMap[m].slice().sort(function(a,b){return a.hd<b.hd?-1:a.hd>b.hd?1:0;});
+    var total = pp.length;
+    var done2 = pp.filter(function(p){return p.st==='done';}).length;
+    var pct = total ? Math.round(done2/total*100) : 0;
+    var mo = m.split('-')[1];
+    var stCnt = {};
+    pp.forEach(function(p){stCnt[p.st]=(stCnt[p.st]||0)+1;});
+    var pills = ['done','prog','delay','abandon'].map(function(s){
+      var cnt = stCnt[s]||0;
+      var op = cnt===0 ? 'opacity:0.3;' : '';
+      return '<span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;'+op+ST_CSS[s]+'">'+ST_LBL2[s]+' '+cnt+'</span>';
+    }).join('');
+    var barColor = pct>=80?'#639922':pct>=50?'#378ADD':'#E24B4A';
+    var tid = 'nbt-'+m.replace('-','');
+
+    var rows = pp.map(function(p,i){
+      return '<tr>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px">'+(i+1)+'</td>'+
+        '<td style="padding:6px 8px"><strong style="font-size:12px">'+p.n+'</strong></td>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px">'+p.gr+'</td>'+
+        '<td style="font-size:11px;color:var(--tx2);padding:6px 8px">'+p.bz+'</td>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px">'+p.dp+'</td>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px;text-align:center">'+p.hd+'</td>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px;text-align:center">'+p.c+'주차</td>'+
+        '<td style="padding:6px 8px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;'+ST_CSS[p.st]+'">'+ST_LBL2[p.st]+'</span></td>'+
+        '<td style="font-size:11px;color:var(--tx3);padding:6px 8px">'+(p.mgr||'—')+'</td>'+
+      '</tr>';
+    }).join('');
+
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'background:var(--sf);border:0.5px solid var(--bd);border-radius:10px;overflow:hidden;';
+
+    var head = document.createElement('div');
+    head.style.cssText = 'padding:10px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;';
+    head.innerHTML =
+      '<span style="font-size:13px;font-weight:500;color:var(--tx)">'+(MONTH_LBL[mo]||m)+' 입사</span>'+
+      '<span style="font-size:11px;color:var(--tx3)">'+total+'명</span>'+
+      '<div style="flex:1;height:5px;background:var(--sf2);border-radius:3px;overflow:hidden;">'+
+        '<div style="height:100%;border-radius:3px;background:'+barColor+';width:'+pct+'%"></div>'+
+      '</div>'+
+      '<span style="font-size:12px;font-weight:500;color:'+barColor+'">'+pct+'%</span>'+
+      '<div style="display:flex;gap:6px;flex-wrap:wrap;">'+pills+'</div>'+
+      '<span id="chv-'+tid+'" style="font-size:11px;color:var(--tx3);margin-left:4px;transition:transform .2s">▼</span>';
+
+    var body = document.createElement('div');
+    body.id = tid;
+    body.style.cssText = 'display:none;border-top:0.5px solid var(--bd);overflow-x:auto;';
+    body.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+      '<thead><tr style="background:var(--sf2)">'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">#</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">이름</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">직책</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">사업부</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">팀(부서)</th>'+
+      '<th style="padding:6px 8px;text-align:center;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">입사일</th>'+
+      '<th style="padding:6px 8px;text-align:center;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">완료</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">상태</th>'+
+      '<th style="padding:6px 8px;text-align:left;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">관리자</th>'+
+      '</tr></thead><tbody>'+rows+'</tbody></table>';
+
+    head.addEventListener('click', function(){
+      var open = body.style.display === 'block';
+      body.style.display = open ? 'none' : 'block';
+      var chv = document.getElementById('chv-'+tid);
+      if(chv) chv.style.transform = open ? '' : 'rotate(180deg)';
+    });
+
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    el.appendChild(wrap);
+  });
+}
+
+renderAbandonDelay();
+renderNbMonthly();
+
 
 
 // ── ABANDON TAB
