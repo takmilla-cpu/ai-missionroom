@@ -190,7 +190,7 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
     <div style="margin-top:32px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
         <span class="dot" style="background:#ef4444"></span>
-        <span style="font-size:13px;font-weight:700;color:var(--tx2);">방치 및 3주↑ 지연 인원</span>
+        <span style="font-size:13px;font-weight:700;color:var(--tx2);">미완료 인원 (기존 대상자)</span>
         <span id="bdg-adl" style="font-size:11px;padding:1px 7px;border-radius:10px;background:#FEE2E2;color:#991B1B;font-weight:500;"></span>
       </div>
       <div id="abandonDelayList"></div>
@@ -315,7 +315,12 @@ td{padding:8px 12px;font-size:12.5px;color:var(--tx);vertical-align:middle;}
     <div class="card c-rd"><div class="card-lbl">지연 &amp; 방치</div><div class="card-val" id="nb-delay">—</div><div class="card-sub" id="nb-delay-sub">—</div></div>
     <div class="card c-gy"><div class="card-lbl">미로그인</div><div class="card-val" id="nb-nl">—</div><div class="card-sub">시스템 미접속</div></div>
   </div>
-  <div class="sec" style="margin-bottom:12px;"><span class="dot"></span>월별 입사자 현황 <span style="font-size:11px;color:var(--tx3);">(클릭 시 목록 펼치기)</span></div>
+  <div class="sec" style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+    <div><span class="dot"></span>월별 입사자 현황 <span style="font-size:11px;color:var(--tx3);">(클릭 시 목록 펼치기)</span></div>
+    <button class="btn-xl" onclick="dlXl('newbie')" style="font-size:11px;padding:5px 12px;">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v8M5 7l3 3 3-3M3 12h10"/></svg>전체 엑셀
+    </button>
+  </div>
   <div id="nbMonthly" style="display:flex;flex-direction:column;gap:10px;"></div>
 </div>
 
@@ -1140,23 +1145,28 @@ renderAll(INIT_DATA);
 function renderAbandonDelay() {
   var el = document.getElementById('abandonDelayList');
   if (!el) return;
-  var ST_CSS = {abandon:'background:#FEE2E2;color:#991B1B', delay:'background:#EEEDFE;color:#3C3489'};
-  var ST_LBL = {abandon:'방치', delay:'3주↑ 지연'};
+  var ST_CSS = {
+    abandon:'background:#FEE2E2;color:#991B1B',
+    delay:'background:#EEEDFE;color:#3C3489',
+    prog:'background:#E6F1FB;color:#0C447C'
+  };
+  var ST_LBL = {abandon:'방치', delay:'3주↑ 지연', prog:'진행중'};
   var NEW_CUTOFF = '2026-02-25';
   var returned = new Set((INIT_DATA.leave||[]).filter(function(r){return !r.on_leave;}).map(function(r){return r.n;}));
-  var items = RAW_DATA.filter(function(p){return p.st==='abandon'||p.st==='delay';});
-  items.sort(function(a,b){ return (a.st==='abandon'?0:1)-(b.st==='abandon'?0:1)||a.bz.localeCompare(b.bz); });
+  var items = RAW_DATA.filter(function(p){
+    if(p.st!=='abandon' && p.st!=='delay' && p.st!=='prog') return false;
+    var isNew = p.hd >= NEW_CUTOFF;
+    var isRet = returned.has(p.n);
+    return !isNew && !isRet;
+  });
+  items.sort(function(a,b){
+    var order = {abandon:0, delay:1, prog:2};
+    return (order[a.st]||0)-(order[b.st]||0) || a.bz.localeCompare(b.bz);
+  });
   var bdg = document.getElementById('bdg-adl');
   if(bdg) bdg.textContent = items.length+'명';
   if(!items.length){ el.innerHTML='<div style="text-align:center;color:var(--tx3);padding:20px;font-size:13px;">해당 인원 없음</div>'; return; }
   var rows = items.map(function(p,i){
-    var isNew = p.hd >= NEW_CUTOFF;
-    var isRet = returned.has(p.n);
-    var typeTag = isRet
-      ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#ECFDF5;color:#065F46">복직</span>'
-      : isNew
-        ? '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#FEF3C7;color:#92400E">신규</span>'
-        : '<span style="font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;background:#F1EFE8;color:#5F5E5A">기존</span>';
     return '<tr>'+
       '<td style="color:var(--tx3);font-size:11px;padding:6px 10px">'+(i+1)+'</td>'+
       '<td style="padding:6px 10px"><strong style="font-size:13px">'+p.n+'</strong></td>'+
@@ -1166,7 +1176,6 @@ function renderAbandonDelay() {
       '<td style="font-size:11px;color:var(--tx3);padding:6px 10px">'+p.e+'</td>'+
       '<td style="font-size:11px;color:var(--tx3);text-align:center;padding:6px 10px">'+p.c+'주차</td>'+
       '<td style="padding:6px 10px"><span style="font-size:10px;padding:2px 8px;border-radius:10px;font-weight:500;'+ST_CSS[p.st]+'">'+ST_LBL[p.st]+'</span></td>'+
-      '<td style="padding:6px 10px">'+typeTag+'</td>'+
     '</tr>';
   }).join('');
   el.innerHTML='<div class="sc"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
@@ -1179,7 +1188,6 @@ function renderAbandonDelay() {
     '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">이메일</th>'+
     '<th style="padding:6px 10px;text-align:center;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">완료</th>'+
     '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">상태</th>'+
-    '<th style="padding:6px 10px;font-weight:500;color:var(--tx2);border-bottom:0.5px solid var(--bd)">구분</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table></div>';
 }
 function renderNbMonthly() {
